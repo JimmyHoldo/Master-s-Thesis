@@ -1,0 +1,41 @@
+% CREATED BY DAVID FRISK, 2016
+\chapter{Introduction}
+The number of devices connected to the Internet has for some time grown impressively and it is predicted that by 2020 there will be around 50 billion devices connected to the Internet \citep{BELLO201752}.  More and more of these devices are becoming physical objects, such as sensors and actors. This phenomenon is known as the Internet of Things (IoT).
+
+There are many unsolved problems in the field of Wireless Sensor Networks (WSNs). One such problem is the complexity of designing, coding, and testing Wireless Sensor Network (WSN) applications. The problem arises because of the distributed environment of heterogeneous devices in a WSN, where each device can have limited resources and the communication between devices can have many specific requirements \citep{sivieri2012wsn}.
+
+ Erlang could greatly reduce the complexity of developing WSN applications. This is because Erlang is a high-level language that was developed to hide distribution, to make it possible with minimum effort to guarantee fault-tolerance and because the language was designed for embedded system it also supports binaries as a data type and this allows pattern-matching on bit-streams. Because of this it should be possible to achieve reliable and fault-tolerant communication between nodes in a sensor network with Erlang \citep{sivieri2012erlang}.
+
+The Erlang language was developed in the 1980s by Ericsson. At first it was developed for embedded telecommunication system but has over time continued to grow. Now it is a complete platform with many libraries that offer many functionalities for a wide range of different applications. 
+
+Furthermore, Erlang makes it easier to reuse components because it is a high-level language and because it uses a virtual machine it helps solve the problem of heterogenous devices in a WSN. From all these points Erlang seems to be a good fit for some WSNs.
+
+\section{Internet of Things}\label{sec:intro_iot}
+The concept of IoT is to connect every network-enabled device to the Internet to create a “smart world”, where our everyday objects can connect to each other to share data with the aim of enhancing our lives. There are many examples of applications that can enhance life in areas such as healthcare, smart buildings, social networks, environment monitoring, transportation and logistics, etc \citep{yang2014internet}.
+
+Every IoT application depends on collected data from a network enabled device or devices and there exist many different data collection devices and systems e.g. RFID, sensors, wireless sensor networks (WSNs) \citep{yang2014internet}.
+
+\section{Aim of the work}
+
+\subsection{Problem statement}
+The goal of this thesis is to evaluate the performance of using Erlang to manage the communication in a WSN. To achieve this evaluation of the performance two prototypes need to be developed. One of the prototypes shall be developed with the low-level language C and the other one with the high-level language Erlang. The performance in this case is going to be measured by comparing the number of lines of code to investigate the effort of implementation for the different prototypes and the utilization of CPU, RAM and power for different rates of sending messages.
+
+In a WSN it is often required that the devices are power efficient and that devices can communicate directly with each other. This is something that the standard Erlang distribution does not implement and a connection to a suitable networking protocol that can manage device to device communication must therefore also be implemented as part of the thesis.
+
+For the resulting thesis to be considered successful the following points shall be achieved:
+
+\begin{itemize} 
+    \item A C prototype that uses a suitable network protocol for device to device communication and energy efficiency. 
+    \item An Erlang prototype that uses the same protocol as the C prototype. Because of this some connection to this protocol must be implemented as part of the Erlang prototype. 
+    \item An analysis of data collected from the prototypes presented as to give someone that want to develop the communication between nodes in a WSN with Erlang a guideline for the hardware requirements.   
+\end{itemize}
+
+\subsection{Limitations}
+There are many network protocols and multiple variants of some of them. Because of the limited time for the project only one of these protocols and variants is going to be investigated. 
+
+\section{Affiliation}
+The project that that this thesis is going to report on is going to be carried out together with the company Cipherstone Technologies AB. The company is currently in the first stages of developing a new WSN product. This thought for this product is that it should be a video-based sensor network and they want to investigate communication solutions for the network.
+
+\section{Structure of the thesis}
+
+
