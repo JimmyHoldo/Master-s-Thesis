@@ -77,6 +77,16 @@ With the previous mention characteristics of Erlang, it is easy to make a system
 
 Erlang also supports hot code swapping. This allows Erlang models to be updated on the fly without the need to stop running the system and to make sure that the old code terminates gracefully \citep{sivieri2012erlang}.
 
+One last thing to mention about Erlang is that it provides some different alternatives for running C code. The alternatives are ports, port drivers, C nodes and Native Implemented Functions (NIFs). The difference between these methods are in how they are loaded. For example, NIFS are dynamically linked into the emulator process and port drivers are a shared library and these methods to load the C code would case the emulator to crash if the C code terminates. A representation of the loading differences between a port and a port drivers can be seen in Figure~\ref{fig:erlang_run_ccode} \citep{ericsson_ab_2019}. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{figure/erlang_port.png}
+\includegraphics[scale=0.5]{figure/erlang_port_driver.png}
+\caption{Port and port driver communication.}
+\label{fig:erlang_run_ccode}
+\end{figure}
+
 \section{IEEE 802.15.4}
 The communication standard that is usually used within the Internet is the TCP/IP architecture. The architecture consists of five functional layers, the physical, data-link, network, transport and application layers. When data is passed between these layers extra framing and control data is added to the main data. This added data requires extra processing power and memory capacity and even more memory and processing power are consumed because of buffering of packets between the different layers \citep{BELLO201752}.
 
@@ -99,7 +109,7 @@ The IEEE 802.15.4 standard defines to network topologies, the star topology and 
 
 The difference between a star network and a peer-to-peer network is that in a star network the PAN coordinator is the master node. All slave nodes of the network can only communicate with this master node \cite{kohvakka2006performance}. This is achieved when an FFD device is initiated as a PAN coordinator and a unique PAN identifier in the current radio range is selected. When other devices associate with the network, they get the same PAN identifier and can only communicate with the PAN coordinator of the network with the same PAN identifier \citep{lan2003part}.
 
-In a peer-to-peer network all devices are allowed to communicate with any other device in the network. This is suitable for networks where self-organizing, self-healing and large coverage by allowing multiple hops to route messages is an advantage. A disadvantage that follows from this is that the network latency increases due to the message relaying \cite{kohvakka2006performance}.
+In a peer-to-peer network all devices are allowed to communicate with any other device in the network. This is suitable for networks where self-organizing, self-healing and large coverage by allowing multiple hops to route messages is an advantage. A disadvantage that follows from this is that the network latency increases due to the message relaying \citep{kohvakka2006performance}.
 
 \subsection{Architecture}
 The standard is for the two first layers in the network stack, the Physical (PHY) and Medium Access Control (MAC) layers. Where the PHY layer contains the radio frequency transceiver and the low-level mechanisms that is needed to operate the transceiver.  
@@ -151,10 +161,92 @@ On top of the IEEE 802.15.4 standard are built the most commonly used protocols 
 \label{fig:protocolstacks}
 \end{figure}
 
-\subsection{Architecture}
-\begin{figure}[H]
+In Table~\ref{table:zigbee_comparison} a comparison of the characteristics between ZigBee, Bluetooth and WiFi are presented.
+
+\begin{table}[H]
+\centering
+\resizebox{\columnwidth}{!}{%
+\begin{tabulary}{\textwidth}{LLLL}
+\toprule
+    &  ZigBee (IEEE 802.15.4) & Bluetooth (IEEE 802.15.1) & WiFi (IEEE 802.11) \\ 
+\midrule
+Application             & Control and monitoring         & Cable replacement &  Wireless LAN\\
+Frequency bands         &  2.4 GHz, 868 and 915 MHz      & 2.4 GHz           &  2.4 GHz\\
+Battery life (days)     &  100–700                       & 1–7               &  0.1–5\\
+Node per network        &  65,000                        & 7                 &  30\\
+Bandwidth               &  20–250 kbps                   & 1 Mbps            &  2–100 Mbps\\
+Range (m)               &  1–300                         & 1–10              &  1–100\\
+Topology                & Star, tree, cluster tree, mesh & Tree              &  Tree\\
+Standby current (Amps)  & $3*10^{-6}$                    & $200*10^{-6}$     &  $20*10^{-3}$\\
+Memory (KB)             & 32–60                          & 100               &  100\\ 
+\bottomrule
+\end{tabulary}%
+}
+\caption{ZigBee, Bluetooth, and WiFi comparison \citep{yang2014internet, zigbee_alliance_2019}}
+\label{table:zigbee_comparison}
+\end{table}
+
+\subsection{Architecture}\label{sec:architecture}
+The architecture of ZigBee can be seen as a set of blocks, that is usually called layers. Each layer is tasked with preforming a specific service for the layer above and the layer below another layer have no knowledge about the layer above it. Between each layer there is two Service Access Points (SAPs) that isolates a layer. One of these SAPs provides a data transmission service and the other provides a management entity service that control all other services in the attached layer by exposing an interface for the layer above \citep{gislason2008zigbee, zigbee2007spec}. An image that represents the architecture of the ZigBee stack can be found in Figure~\ref{fig:zigBeeArch}.
+
+\begin{figure}[ht]
 \centering
 \includegraphics[scale=0.46]{figure/ZigBeeStackArchitecture.png}
-\caption{ZigBee stack architecture}
+\caption{Image of the ZigBee stack architecture based on ideas from \citet{gislason2008zigbee, yang2014internet, zigbee2007spec}.}
 \label{fig:zigBeeArch}
+\end{figure}
+
+\vspace{5mm}
+\textbf{Application layer (APL)}
+
+The APL consist of the Application Support Sublayer (APS), ZigBee Device Object (ZDO) and manufacture defined application objects \citep{zigbee2007spec}.
+
+The APS is the layer above the Network (NWK) Layer and provides the NWK layer with an interface to the APL.  The task that the APS has is to filter out packets where endpoints does not exist, manage transmission retries with end-to-end acknowledgment, maintaining the local binding table which handles the connection of an endpoint on the current node with one or more endpoints on other nodes, maintaining the local groups table which makes it possible to send group-addressed frames to endpoints associated with the same group and maintaining the local address map which handles the association between a 64-bit MAC address with a ZigBee 16-bit network address \citep{gislason2008zigbee, zigbee2007spec}.
+
+The ZDO is an application that on every ZigBee device runs on endpoint 0 and includes the ZigBee Device Profile. This is a specialized application profile that on a network is responsible for discovering, configuring and maintaining ZigBee devices and services.  The ZDO applications also directly interacts with the NWK layer, by controlling when to create a network or join a network and when to leave a network \citep{gislason2008zigbee}.
+
+Manufactured defined application objects are resides in the Application Framework (AF). The AF also contains the ZigBee Cluster library and the task of this library is to provide a framework for running applications where each application has a unique endpoint \citep{gislason2008zigbee}.
+
+\vspace{5mm}
+\textbf{Network (NWK) layer}
+
+The task of the NWK layer is to connect the above layers with the MAC sub-layer. To connect with the APL, the NWK layer as all other layers also provides two SAPs as described in Section~\ref{sec:architecture}. The data service and management service that the SAPs corresponds to are responsible for \citep{farahani2011zigbee, zigbee2007spec}:
+
+\begin{itemize}
+   \item Transporting protocol data units to intended recipients.
+   \item Provide security that ensure both authenticity and confidentiality of a transmission.
+   \item Self-configuration of the stack for either starting a network as a ZigBee coordinator or joining a network.
+   \item Create a new network. 
+   \item The ability to for a device to join, rejoin and leave a network. This also include the ability for a ZigBee coordinator or router to request that another device leave the network.
+   \item Address assignment of a device by a ZigBee coordinator or router.
+   \item Discovering, recording and reporting information about devices directly neighbourly to the current device.
+  \item Discovering and recording paths for sending messages.
+  \item Controlling when the recipient device is active and for how long and by this enabling MAC sub-layer synchronisation or direct reception.
+  \item The ability to use routing mechanisms such as unicast, broadcast, multicast and many to one to exchange data in the network efficiently.
+\end{itemize}
+
+\vspace{5mm}
+\textbf{Security service provider}
+
+The security service provider is responsible for services that provides encryption of data confidentiality, device and data authentication and replat protection. These security measures are optional, and it is up to the developer to chose if they should be used \citep{farahani2011zigbee}.
+
+\subsection{Network topology}
+The network topologies available in ZigBee are based on the star and peer-to-peer topologies specified in IEEE 802.15.4. Based on these topologies from IEEE 802.15.4 the NWK layer of the ZigBee stack supports star, tree and mesh topologies \citep{farahani2011zigbee}.
+
+The star topology is the simplest topology to form. When an FFD device that is programmed to be a PAN coordinator starts, it establishes a network. Every device that wants to join the network must join the network through the PAN coordinator. Because of this the star topology is not suitable for application that requires a bigger area than the radio range of the PAN coordinator \citep{yang2014internet}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[scale=0.5]{figure/zigbeetopologies.png}
+\caption{ZigBee network topologies}
+\label{fig:zigbeetopologies}
+\end{figure}
+
+The peer-to-peer topology gives the possibility for different shaped networks. In a tree topology (see Figure~\ref{fig:zigbeetopologies}) a PAN coordinator creates the network, FFDs forms the branches of the tree and RFDs are the leaves. The difference between a tree topology and a mesh topology (see Figure~\ref{fig:zigbeetopologies}) is that in the tree topology there exist restrictions on the communication between FFDs. In a mesh topology every FFD can communicate with all other FFDs in radio range. Figure~\ref{fig:barrier_topology} shows the advantage one of the peer-to-peer topologies have in extending the range of the network and even circumvent barriers \citep{farahani2011zigbee}.
+
+\begin{figure}[ht]
+\centering
+\includegraphics[scale=0.5]{figure/barrier_topology.png}
+\caption{A ZigBee network topology with a barrier.}
+\label{fig:barrier_topology}
 \end{figure}
