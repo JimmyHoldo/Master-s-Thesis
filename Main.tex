@@ -7,7 +7,6 @@
 \input{include/settings/Settings}
 
 \begin{document} 
-
 % COVER PAGE, TITLE PAGE AND IMPRINT PAGE
 \pagenumbering{roman}			% Roman numbering (starting with i (one)) until first main chapter
 \input{include/frontmatter/Titlepage}
@@ -58,7 +57,7 @@
 \input{include/Results}
 
 % DISCUSSION
-\input{include/Discussion}
+%\input{include/Discussion}
 
 % CONCLUSION
 \input{include/Conclusion}
@@ -71,11 +70,18 @@
 
 % APPENDICES
 \cleardoublepage
-\appendix
+%\appendix
+\begin{appendices}
+\titleformat{\chapter}[display]
+  {\Huge\bfseries\filcenter}
+  {{\fontsize{50pt}{1em}\vspace{-4.2ex}\selectfont \textnormal{Appendix \thechapter}}}{1ex}{}[]
 \setcounter{page}{1}
 \pagenumbering{Roman}			% Capitalized roman numbering starting from I (one)
 
 \input{include/backmatter/Appendix_1}
 
+\input{include/backmatter/Appendix_2}
+\input{include/backmatter/Appendix_3}
+\end{appendices}
 
 \end{document}

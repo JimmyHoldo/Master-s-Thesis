@@ -1,10 +1,641 @@
 % CREATED BY DAVID FRISK, 2016
 \chapter{Results}
+This chapter contains results about the comparison of the C++ and Erlang prototype. The first four sections contains results about the number of lines of code, memory utilization, CPU utilization and power consumption. In the last section of this chapter some experiments are presented that explains why the results fell out as they did. 
 
 \section{Lines of code}
+The total lines of code for the C++ prototype is 352 lines and the total for the Erlang prototype the total value is 317 lines. This means that the C++ prototype has 11\% more lines of code in total. This total percentage value is somewhat misleading because the prototypes has parts that does not corresponds directly. Therefore, it is more interesting to look at each corresponding part of the prototypes separately. 
+
+One part of the total that is interesting to show the lines of code for is the main part of the prototypes, the writer, reader and datagen processes. The part of the C++ prototype then has 167 lines of code and the Erlang prototype has 45 lines of code. The C++ prototype has therefore 73.1\% more lines of code than the Erlang prototype in this setting. 
+
+To restart a process if it should crash the C++ prototype uses scripts to turn the processes into systemd services and these scripts consists of 34 lines of code.  The Erlang prototype instead uses the built-in supervisor behaviour. The code needed for setting up this functionality consists of 45 lines of code and the C++ prototype uses for this part therefore 24.5\% less lines of code. 
+
+The communication with the ZigBee module is done by serial communication. The C++ prototype implements this functionality with C++ but the Erlang prototype uses a port to C code. Therefore, the lines of code for this part of the prototypes are for the C++ prototype 150 lines of code and for the Erlang prototype 105 lines of code.  This results in that the C++ prototype uses 45.7\% more lines of code for this part. It should be noted that most of the extra lines of code in the C++ prototypes comes from the header file.
+
+The last pieces of code are the code that implements the port functionalities of the Erlang prototype and this part does not have any corresponding part in the C++ prototype. In total this part consists of 106 lines of code where 32 lines is written in Erlang and 74 in C. 
 
 \section{Memory utilization}
+Memory utilization has been measured by using two Linux commands as mentioned in Section~\ref{sec:data_collection}. In Figure~\ref{fig:ps_mem_vsz_diagram} the average virtual memory size (VSZ) is presented for the processes that the C++ prototype consists of and the VSZ for the Erlang prototype is presented in Figure~\ref{fig:ps_mem_vsz_erl_diagram}.  
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{axis}[
+        title={VSZ utilization from ps},
+        scaled ticks=false,
+        xlabel={Packets/s},
+        ylabel={MB},
+        tick label style={font=\scriptsize},
+        legend style={font=\tiny}, %{font=\fontsize{4}{5}\selectfont},
+        xmin=0, xmax=10,
+        xtick={0,0.5,1,2,...,10},
+        ymin=98, ymax=108,
+        ytick={99,99.5,100,...,108},
+        axis y discontinuity=crunch,
+        enlargelimits=false,
+        legend pos=south east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=ms, y=VSZA]
+            {cppmeasurements.txt};
+            \addlegendentry{Average C++ VSZ utilization}
+        \addplot[color=red, mark=x]
+            table[x=ms, y=VSZM]
+            {cppmeasurements.txt};
+            \addlegendentry{Max C++ VSZ utilization}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Data about VSZ memory utilization of the C++ prototype collected with the \textit{ps} command.}
+    \label{fig:ps_mem_vsz_diagram}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+        \begin{axis}[
+            title={VSZ utilization from ps},
+            scaled ticks=false,
+            xlabel={Packets/s},
+            ylabel={MB},
+            tick label style={font=\scriptsize},
+            legend style={font=\tiny}, %{font=\fontsize{4}{5}\selectfont},
+            xmin=0, xmax=10,
+            ymin=78.73, ymax=81.5,
+            xtick={0,0.5,1,2,...,10},
+            ytick={79,79.25,...,81.5},
+            axis y discontinuity=crunch,
+            enlargelimits=false,
+            legend pos=north east,
+            ymajorgrids=true,
+            grid style=dashed,
+            ]
+            \addplot[color=blue, mark=square]
+                table[x=ms, y=VSZA]
+                {erlmeasurements.txt};
+                \addlegendentry{Average Erlang VSZ utilization}
+            \addplot[color=red, mark=x]
+                table[x=ms, y=VSZM]
+                {erlmeasurements.txt};
+                \addlegendentry{Max Erlang VSZ utilization}
+        \end{axis}
+        \end{tikzpicture}
+        \caption{Data about VSZ memory utilization of the Erlang prototype collected with the \textit{ps} command.}
+        \label{fig:ps_mem_vsz_erl_diagram}
+    \end{figure}
+    
+    In Figure~\ref{fig:ps_mem_rss_diagram} the resident set size (RSS) utilization is presented for both the C++ prototype and the Erlang prototype. The data shows that the Erlang prototype uses less RSS memory for the differnet data generation speeds. 
+    
+    \begin{figure}[H]
+        \centering
+        \begin{tikzpicture}[scale=1.7]
+        \begin{axis}[
+            title={RSS utilization from ps},
+            xlabel={Packets/s},
+            ylabel={MB},
+            y tick label style={font=\tiny},
+            x tick label style={font=\scriptsize},
+            legend style={font=\fontsize{4}{5}\selectfont, at={(0.964,0.6)},anchor=north east},
+            xmin=0, xmax=10,
+            xtick={0,0.5,1,2,...,10},
+            ymin=7.73, ymax=15.8,
+            axis y discontinuity=crunch,
+            enlargelimits=false,
+            ytick={8.5,8.75,9,...,15.8},
+            %legend pos=south east,
+            ymajorgrids=true,
+            grid style=dashed,
+            ]
+            \addplot[color=blue, mark=square]
+                table[x=ms, y=RSSA]
+                {cppmeasurements.txt};
+                \addlegendentry{Average C++ RSS utilization}
+            \addplot[color=red, mark=x]
+                table[x=ms, y=RSSM]
+                {cppmeasurements.txt};
+                \addlegendentry{Max C++ RSS utilization}
+            \addplot[color=green, mark=square]
+                table[x=ms, y=RSSA]
+                {erlmeasurements.txt};
+                \addlegendentry{Average Erlang RSS utilization}
+            \addplot[color=orange, mark=x]
+                table[x=ms, y=RSSM]
+                {erlmeasurements.txt};
+                \addlegendentry{Max Erlang RSS utilization}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Data about RSS memory utilization collected with the \textit{ps} command.}
+    \label{fig:ps_mem_rss_diagram}
+\end{figure}
+
+From the diagrams in Figure~\ref{fig:ps_mem_vsz_diagram}, Figure~\ref{fig:ps_mem_vsz_erl_diagram} and Figure~\ref{fig:ps_mem_rss_diagram} it shows that the Erlang prototype has a bigger memory utilization for VSZ and that the RSS memory utilization is smaller for all data generation speeds. How many times greater the memory utilization is for the Erlang prototype is shown by in Figure~\ref{fig:mem_precentage}. If the value is below 1 it means that the Erlang prototype uses less of that type of memory than the C++ prototype.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{semilogyaxis}[
+        title={Memory utilization},
+        xlabel={Packets/s},
+        axis x line=middle,
+        %x label style={at={(axis description cs:1,0.25)}},
+        ylabel={$\times$},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{4}{5}\selectfont},
+        yticklabel style={/pgf/number format/fixed},
+        yticklabel={%
+			\pgfmathfloatparsenumber{\tick}%
+			\pgfmathfloatexp{\pgfmathresult}%
+			\pgfmathprintnumber{\pgfmathresult}%
+		},
+        xmin=0, xmax=10,
+        ymin=0.5, ymax=2,
+        xtick={0,0.5,1,2,...,10},
+        ytick={0.5,0.55,0.6,0.65,0.7,0.75,0.8,0.9,1,1.25,...,2 },
+        legend pos=north east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=PVSAA]
+            {mem_procent.txt};
+            \addlegendentry{Percentage between average VSZ values}
+        \addplot[color=red, mark=x]
+            table[x=s, y=PVSZM]
+            {mem_procent.txt};
+            \addlegendentry{Percentage between max VSZ values}
+        \addplot[color=green, mark=square]
+            table[x=s, y=PRSSA]
+            {mem_procent.txt};
+            \addlegendentry{Percentage between average RSS values}
+        \addplot[color=orange, mark=x]
+            table[x=s, y=PRSSM]
+            {mem_procent.txt};
+            \addlegendentry{Percentage between max RSS values}
+    \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{A value showing how many times greater the more memory utilization is for Erlang.}
+    \label{fig:mem_precentage}
+\end{figure}
+
+By using the Linux free command system data was collected about the used, free and available memory for starting a new process. The calculation done by subtracting the value from the free command when the system was idle from the average values collected from the different data generation speeds results in a value that shows how many times greater the Erlang prototype utilise the memory. The result of this calculation is shown in Figure~\ref{fig:mem_precentage_free}, where a value below 1 means that The Erlang prototype has less of that type of memory.   
  
+ \begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{semilogyaxis}[
+        title={Memory utilization from \textit{free} command},
+        xlabel={Packets/s},
+        axis x line=middle,
+        x label style={at={(axis description cs:1,0.25)}},
+        ylabel={Erlang value / C++ value},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{4}{5}\selectfont},
+        yticklabel style={/pgf/number format/fixed},
+        yticklabel={%
+			\pgfmathfloatparsenumber{\tick}%
+			\pgfmathfloatexp{\pgfmathresult}%
+			\pgfmathprintnumber{\pgfmathresult}%
+		},
+        ymin=0.5, ymax=2.5,
+        xmin=0, xmax=10,
+        xtick={0,0.5,1,2,...,10},
+        ytick={0.5,1,1.25,...,2.5},
+        legend pos=north east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=PUSED]
+            {mem_procent.txt};
+            \addlegendentry{More used memory}
+        \addplot[color=green, mark=*]
+            table[x=s, y=PFREE]
+            {mem_procent.txt};
+            \addlegendentry{More free memory}
+        \addplot[color=red, mark=x]
+            table[x=s, y=PAVAILABLE]
+            {mem_procent.txt};
+            \addlegendentry{More available memory}
+    \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{A value showing how many times greater Erlang utilizes the memory from the categories used, free and available from the \textit{free} command.}
+    \label{fig:mem_precentage_free}
+\end{figure}
+
 \section{CPU utilization}
- 
+The CPU utilization was measured in two different ways. The first was with the ps command which gives gives the percentage value of the CPU time divided with the total time the process has been running. This data can be seen in Figure~\ref{fig:ps_cpu_diagram}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{axis}[
+        title={CPU utilization},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        ylabel={CPU time/sample rate},
+        legend style={font=\fontsize{5}{5}\selectfont},
+        xmin=0, xmax=10,
+        xtick={0,0.5,1,2,...,10},
+        ymin=0, ymax=5,
+        ytick={0,0.25,...,5},
+        legend pos=south east,
+        ymajorgrids=true, %xmajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=ms, y=CPUA]
+            {cppmeasurements.txt};
+            \addlegendentry{Average C++ CPU utilization}
+        \addplot[color=red, mark=square]
+            table[x=ms, y=CPUA]
+            {erlmeasurements.txt};
+            \addlegendentry{Average Erlang CPU utilization}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Collected data about CPU utilization from the \textit{ps} command.}
+    \label{fig:ps_cpu_diagram}
+\end{figure}
+
+The second way the CPU utilization was measured was by as previously explained in Section~\ref{sec:data_collection} was to take multiple samples with one second between samples and then calculate a value of how much CPU time has been used between the samples. The result from this calculation can be seen in Figure~\ref{fig:cpu_diagram_mult_sample}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{axis}[
+        title={CPU utilization},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{4}{5}\selectfont},
+        ylabel={CPU time/sample rate},
+        xmin=0, xmax=10,
+        ymin=0, ymax=11,
+        xtick={0,0.5,1,2,...,10},
+        ytick={0,0.5,...,11},
+        legend pos=north west,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=ms, y=CPUProcA]
+            {cppmeasurements.txt};
+            \addlegendentry{Average C++ CPU utilization}
+        \addplot[color=red, mark=square]
+            table[x=ms, y=CPUProcM]
+            {cppmeasurements.txt};
+            \addlegendentry{Max C++ CPU utilization}
+        \addplot[color=green, mark=x]
+            table[x=ms, y=CPUProcA]
+            {erlmeasurements.txt};
+            \addlegendentry{Average Erlang CPU utilization}
+        \addplot[color=orange, mark=x]
+            table[x=ms, y=CPUProcM]
+            {erlmeasurements.txt};
+            \addlegendentry{Max Erlang CPU utilization}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Data collected about CPU utilization as described in Section~\ref{sec:data_collection}.}
+    \label{fig:cpu_diagram_mult_sample}
+\end{figure}
+
+In Figure~\ref{fig:cpu_percentag_diagram} a compilation of the data is done to show a value about how many times more the Erlang prototype utilizes the CPU. A value below 1 means that the Erlang prototype utilizes the CPU less than the C++ prototype.  
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{semilogyaxis}[
+        title={CPU utilization},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{4}{5}\selectfont},
+        yticklabel style={/pgf/number format/fixed},
+        yticklabel={%
+			\pgfmathfloatparsenumber{\tick}%
+			\pgfmathfloatexp{\pgfmathresult}%
+			\pgfmathprintnumber{\pgfmathresult}%
+		},
+        ylabel={Erlang value / C++ value},
+        xmin=0, xmax=10,
+        %ymin=1, ymax=6,
+        xtick={0,0.5,1,2,...,10},
+        axis x line=middle,
+        ytick={0.25,0.3,0.4,0.5,0.75,1,1.5,2,...,4},
+        legend pos=north east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=PCPU]
+            {cpu_procent.txt};
+            \addlegendentry{Percentage CPU utilization from \textit{ps}}
+        \addplot[color=red, mark=square]
+            table[x=s, y=PCPUProcA]
+            {cpu_procent.txt};
+            \addlegendentry{Percentage average CPU utilization}
+        \addplot[color=green, mark=square]
+            table[x=s, y=PCPUProcM]
+            {cpu_procent.txt};
+            \addlegendentry{Percentage max CPU utilization}
+    \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{Data collected about CPU utilization as described in Section~\ref{sec:data_collection}.}
+    \label{fig:cpu_percentag_diagram}
+\end{figure}
+
 \section{Power consumption}
+By using a multimeter to measure ampere and volts for each data generation rate of a prototype every five seconds an average power consumption value was attained. These values is presented in Figure~\ref{fig:power_consumption} and in Figure~\ref{fig:power_percentag_diagram} it is shown how many times greater the power consumption is for the Erlang prototype.
+
+\begin{figure}[H]
+    \centering
+    \pgfplotsset{scaled y ticks=false}
+    \begin{tikzpicture}[scale=1.7]
+        \begin{axis}[
+            title={Power consumption},
+            xlabel={Packets/s},
+            tick label style={font=\scriptsize},
+            legend style={font=\fontsize{5}{5}\selectfont},
+            ylabel={Watt},
+            xmin=0, xmax=10,
+            ymin=0.07, ymax=0.16,
+            xtick={0,0.5,1,2,...,10},
+            ytick={0.08,0.09,...,0.5},
+            yticklabel style={
+                /pgf/number format/fixed,
+                /pgf/number format/precision=2,
+                /pgf/number format/fixed zerofill
+            },
+            scaled y ticks=false,
+            axis y discontinuity=crunch,
+            enlargelimits=false,
+            legend pos=north east,
+            ymajorgrids=true,
+            grid style=dashed,
+            ]
+            \addplot[color=blue, mark=square]
+                table[x=s, y=AC]
+                {power_consumption.txt};
+                \addlegendentry{Average C++ power consumption}
+            \addplot[color=red, mark=square]
+                table[x=s, y=AE]
+                {power_consumption.txt};
+                \addlegendentry{Average Erlang power consumption}
+        \end{axis}
+    \end{tikzpicture}
+    \caption{Data collected about the power consumption of the prototypes.}
+    \label{fig:power_consumption}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{semilogyaxis}[
+        title={Times more power consumption},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{5}{5}\selectfont},
+        yticklabel style={/pgf/number format/fixed},
+        yticklabel={%
+			\pgfmathfloatparsenumber{\tick}%
+			\pgfmathfloatexp{\pgfmathresult}%
+			\pgfmathprintnumber{\pgfmathresult}%
+		},
+        ylabel={Erlang/C++},
+        xmin=0, xmax=10,
+        %ymin=1, ymax=6,
+        xtick={0,0.5,1,2,...,10},
+        axis x line=middle,
+        x label style={at={(axis description cs:0.85,0.215)}},
+        ytick={0.96,0.97,...,1.1},
+        legend pos=north east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=Ppower]
+            {power_consumption.txt};
+            \addlegendentry{Times more Erlang power consumption}
+    \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{Diagram showing how many times more power Erlang consumes.}
+    \label{fig:power_percentag_diagram}
+\end{figure}
+
+\section{Analysis of the results}
+In many cases the expected result in a comparison between a C++ and Erlang application would be that the C++ application would use less resources. In the instance presented in this thesis this was not the case. Therefore, the prototypes was investigated to see where the main differences where. 
+
+Two main differences where found. The Erlang prototype uses a port to communicate with a ZigBee module and the C++ prototype uses dbus to communicate data between processes. The first difference could directly be discarded. Because, by adding something extra to the same code that the C++ prototype uses it could not possible result in less memory and CPU utilization. Therefore, the one remaining reason for why the C++ prototype utilizes more memory and CPU is that the C++ prototype uses dbus to communicate between process. 
+
+To show the impact the dbus parts has on the prototype the reader process was selected to preform some more experiments on. By running the same data collection program with some slight modifications that was used for measuring the complete prototypes data was collected about the impact dbus has on the memory and CPU utilization.   
+
+\subsection{Memory utilization of the reader process}
+The experiments was preformed on a reader process version that had all dbus functionalities included and on a version that had all dbus functionalities removed. The results about memory utilization from these experiments is shown in Figure~\ref{fig:readervzs} and Figure~\ref{fig:readerrss}, which only show the VSZ utilization with dbus included because the VSZ without dbus is a constant 3.096 MB for all data generation rates and the RSS utilization respectively. 
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{axis}[
+        title={VSZ utilization for reader process},
+        scaled ticks=false,
+        xlabel={Packets/s},
+        ylabel={MB},
+        tick label style={font=\scriptsize},
+        legend style={font=\tiny}, %{font=\fontsize{4}{5}\selectfont},
+        xmin=0, xmax=10,
+        xtick={0,0.5,1,2,...,10},
+        ymin=40.55, ymax=45,
+        ytick={41,41.5,...,45},
+        axis y discontinuity=crunch,
+        enlargelimits=false,
+        legend pos=south east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=VSZAE]
+            {readertest.txt};
+            \addlegendentry{Average VSZ utilization with dbus}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Data about VSZ memory utilization for the reader process with dbus included. If dbus is not included the reader process utilizes 3.096 MB memory for all data generation rates.}
+    \label{fig:readervzs}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{axis}[
+        title={RSS utilization for reader process},
+        scaled ticks=false,
+        xlabel={Packets/s},
+        ylabel={MB},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{5}{5}\selectfont, at={(0.964,0.6)},anchor=north east},
+        %legend style={font=\tiny}, %{font=\fontsize{4}{5}\selectfont},
+        xmin=0, xmax=10,
+        xtick={0,0.5,1,2,...,10},
+        ymin=0, ymax=5.5,
+        ytick={0,0.5,...,5.5},
+        %axis y discontinuity=crunch,
+        %enlargelimits=false,
+        %legend pos= east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=RSSAE]
+            {readertest.txt};
+            \addlegendentry{Average RSS utilization with dbus}
+        \addplot[color=red, mark=square]
+            table[x=s, y=RSSA]
+            {readertest.txt};
+            \addlegendentry{Average RSS utilization without dbus}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Data about RSS memory utilization for the reader process.}
+    \label{fig:readerrss}
+\end{figure}
+
+The diagrams in Figure~\ref{fig:readervzs} and Figure~\ref{fig:readerrss} shows the amount of each type of memory the reader process utilize. This information is then used in Figure~\ref{fig:readertimesmore} to show how many times more memory the process utilize with dbus included.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{semilogyaxis}[
+        title={Times more reader memory utilization},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{5}{5}\selectfont, at={(0.964,0.4)},anchor=north east},
+        yticklabel style={/pgf/number format/fixed},
+        yticklabel={%
+			\pgfmathfloatparsenumber{\tick}%
+			\pgfmathfloatexp{\pgfmathresult}%
+			\pgfmathprintnumber{\pgfmathresult}%
+		},
+        ylabel={Dbus process / process},
+        xmin=0, xmax=10,
+        ymin=0.9, ymax=15,
+        xtick={0,0.5,1,2,...,10},
+        axis x line=middle,
+        %label style={at={(axis description cs:0.5,0.215)}},
+        ytick={0.5,1,2,...,7,9,11,13,15},
+        %legend pos=north east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=PVSAA]
+            {readertest.txt};
+            \addlegendentry{Times more VSZ utilization}
+        \addplot[color=red, mark=square]
+            table[x=s, y=PRSSA]
+            {readertest.txt};
+            \addlegendentry{Times more RSS utilization}
+    \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{Diagram showing how many times more memory the reader process utilizes when dbus is included.}
+    \label{fig:readertimesmore}
+\end{figure}
+
+\subsection{CPU utilization for the reader process}
+The reader process utilized significantly more CPU resources when dbus was included in the process. As described in Section~\ref{sec:data_collection} two methods was used to collect data about CPU utilization. In Figure~\ref{fig:ps_cpu_diagram_reader} data collected with the ps command is presented and in Figure~\ref{fig:cpu_diagram_reader} the thata from the second metod is presented.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{axis}[
+        title={CPU utilization from ps command},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        ylabel={\%},
+        legend style={font=\fontsize{5}{5}\selectfont, at={(0.964,0.5)},anchor=north east},
+        xmin=0, xmax=10,
+        xtick={0,0.5,1,2,...,10},
+        ymin=0, ymax=1.6,
+        ytick={0,0.25,...,1.6},
+        legend pos=north west,
+        ymajorgrids=true, %xmajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=CPUD]
+            {readertest.txt};
+            \addlegendentry{CPU utilization with dbus}
+        \addplot[color=red, mark=square]
+            table[x=s, y=CPU]
+            {readertest.txt};
+            \addlegendentry{CPU utilization without dbus}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Collected data about the CPU utilization of the reader process from the \textit{ps} command.}
+    \label{fig:ps_cpu_diagram_reader}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{axis}[
+        title={CPU utilization},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        ylabel={CPU time/sample rate},
+        legend style={font=\fontsize{5}{5}\selectfont, at={(0.964,0.5)},anchor=north east},
+        xmin=0, xmax=10,
+        xtick={0,0.5,1,2,...,10},
+        ymin=0, ymax=1.6,
+        ytick={0,0.25,...,1.6},
+        legend pos=north west,
+        ymajorgrids=true, %xmajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=CPUProcAE]
+            {readertest.txt};
+            \addlegendentry{CPU utilization with dbus}
+        \addplot[color=red, mark=square]
+            table[x=s, y=CPUProcAC]
+            {readertest.txt};
+            \addlegendentry{CPU utilization without dbus}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Collected data about the CPU utilization of the reader process as described in Section~\ref{sec:data_collection}.}
+    \label{fig:cpu_diagram_reader}
+\end{figure}
+
+From both diagrams in Figure~\ref{fig:ps_cpu_diagram_reader} and Figure~\ref{fig:cpu_diagram_reader} it shows that the use of dbus to communicate messages between processes significantly increase the CPU utilization. How many times more the dbus version of the reader process utilizes the CPU can be seen in Figure~\ref{fig:cpu_times_more_reader}.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}[scale=1.7]
+    \begin{semilogyaxis}[
+        title={CPU utilization},
+        xlabel={Packets/s},
+        tick label style={font=\scriptsize},
+        legend style={font=\fontsize{4}{5}\selectfont, at={(0.964,0.42)},anchor=north east},
+        yticklabel style={/pgf/number format/fixed},
+        yticklabel={%
+			\pgfmathfloatparsenumber{\tick}%
+			\pgfmathfloatexp{\pgfmathresult}%
+			\pgfmathprintnumber{\pgfmathresult}%
+		},
+        ylabel={Dbus process/process},
+        xmin=0, xmax=10,
+        ymin=0.9, ymax=15,
+        xtick={0,0.5,1,2,...,10},
+        axis x line=middle,
+        ytick={0.5,1,2,...,7,9,11,13,15},
+        %legend pos=north east,
+        ymajorgrids=true,
+        grid style=dashed,
+        ]
+        \addplot[color=blue, mark=square]
+            table[x=s, y=PCPU]
+            {readertest.txt};
+            \addlegendentry{Times more CPU utilization from \textit{ps} with dbus}
+        \addplot[color=red, mark=square]
+            table[x=s, y=PCPUProcA]
+            {readertest.txt};
+            \addlegendentry{Times more CPU utilization with dbus}
+    \end{semilogyaxis}
+    \end{tikzpicture}
+    \caption{Diagram showing how many times more CPU the reader process utilizes when dbus is included.}
+    \label{fig:cpu_times_more_reader}
+\end{figure}

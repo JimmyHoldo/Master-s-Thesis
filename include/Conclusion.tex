@@ -1,8 +1,28 @@
 % CREATED BY DAVID FRISK, 2016
 \chapter{Conclusion}
+In this thesis report a C++ and Erlang prototype has been implemented and evaluated. The task of the prototypes was simulate a WSN that corresponds with the product that the affiliated company is consider for development. The evaluation has been done on one node in the network and the purpose of the evaluation was to investigate the performance impact by using Erlang instead of C++ to handle the communication with ZigBee in the network.  
 
-You may consider to instead divide this chapter into discussion of the results and a summary. 
+\section{Result discussion}
+By running the same test on both prototypes the result that is shown is that the Erlang prototype uses less memory and the CPU utilization is definitely less after more than one data packet is sent per second. This result is at first glance a bit surprising. The expected result is that the Erlang prototype should utilize more memory than the C++ prototype. 
 
-\section{Final deliverables}
+One possible reason for the C++ prototype to use more memory than the Erlang prototype is because of the different methods that is used to communicate between processes. To achieve inter-process communication for the C++ prototype dbus was used and to make this available in the prototype the glib library was included. If the functionalities to communicate between the prototype is removed from the processes of the C++ prototype it utilizes only around 30\% of the amount of VSZ memory and about 60\% of the RSS memory. This shows that in this case the communication between processes is quite inexpensive in Erlang.
+
+It is also possible that other methods and libraries to achieve inter-process communication exists that would give less impact on the memory utilization but that is something that has not been investigated in this thesis. There is also a possibility that the memory utilization could be reduced by using some form of optimization when the prototype is compiled but this is something that also hasn't been investigated in this thesis. 
+
+As mention there are some possibilities to reduce the memory for the C++ prototype but there is also some possibilities to reduce the memory utilization for the Erlang prototype. For example in the paper by \citet{sivieri2012erlang} it is discussed how the memory utilization of the Erlang runtime system can be reduced by removing unnecessary functionalities and features. 
+
+The CPU utilization of the two prototype would also suggest that the dbus inter-process communication functionalities from the glib library requires more processing power than communication between processes in Erlang. From the preformed experiments it is show that the CPU utilization for the C++ prototype increases more with a higher data packet generation rate compared to the Erlang prototype.  
+
+Lastly, it needs to be mentioned that the data presented in this thesis is from running the prototypes for each data generation rate 10 times. Each time the prototype is run for two minutes and a sample of CPU and memory utilization is taken each second. This is quite a small data set for each data generation rate and prototype. Therefore, if some unforeseen noise impacted any of the executed data collection processes it is possible that it would have had a significant impact on the results. The optimal would be to run many more iterations of data collection to counter possible noise in the data but because of time limitations this has not been possible.     
+
+\section{Final statements}
+The work done in this thesis has shown that Erlang can be an possible alternative to using C/C++ in developing WSN applications. By comparing result from the two prototypes it is show that the Erlang prototype utilizes less memory and CPU. The CPU utilization also increases more rapidly for the C++ prototype. 
+
+Both prototypes uses the same code to communicate over ZigBee and the Erlang prototype should require more memory and CPU compared to the C++ prototype because it executes in a virtual machine. Therefore, the most likely explanation for way the C++ prototype utilizes more memory and CPU is the different method the two prototypes uses to communicate data between processes. The amount of memory that is required for loading the dbus functionalities from the glib library is a big part of the prototype and it requires a higher increase of CPU utilization compared to the Erlang prototype for an increase in data generation.    
 
 \section{Future work}
+The thing that made the memory and CPU utilization higher for the C++ prototype in this thesis was the use of the dbus inter-process communication functionalities from the glib library. Therefore, one obvious question that can be derived from this is if there are any other alternatives that can achieve better performance? 
+
+In the Erlang prototype a port was implemented to connect the Erlang part of the prototype to C code that managed the communication with other nodes in the network over ZigBee. This connection could for example be done with a port driver instead or something else. It would therefor be interesting to to implement these alternatives and investigate if any of them would reduce the memory utilization, CPU utilization and the power consumption of the prototype.
+
+Another direction that could be interesting to investigate is if there is other techniques that can achieve the same communication requirements with the same or lower power consumption. If there exist such a technique next step would be to investigate how to communicate between it and Erlang. Would this then require more or less memory and CPU utilization? 
